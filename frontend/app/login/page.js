@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import AuthLayout from "../components/AuthLayout";
 import AuthInput from "../components/AuthInput";
 import SocialButton from "../components/SocialButton";
+import { useAuth } from "../../context/AuthContext";
+import { api } from "../../lib/axios";
 
 // import { signIn, useSession } from "next-auth/react"; // Commented out until next-auth is installed
 
@@ -15,29 +17,24 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const router = useRouter();
 
-    // Mock session for now
-    // const { data: session, status } = useSession();
-    const status = "unauthenticated";
+    const { loginUser } = useAuth();
 
-    // Redirect if already logged in
-    if (status === "authenticated") {
-        router.push("/dashboard");
-        return null;
-    }
+    // Redirect if already logged in - handled by AuthContext or protected route wrapper usually, 
+    // but here we can check if user exists if we want, or rely on the push after login.
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // Handle traditional login logic here
-        console.log("Login:", { email, password });
-        // Demo redirect
-        router.push("/dashboard");
+        try {
+            const res = await api.post("/auth/login", { email, password });
+            loginUser(res.data.token, res.data.user);
+            router.push("/dashboard");
+        } catch (err) {
+            alert(err.response?.data?.error || "Invalid email or password");
+        }
     };
 
     const handleGithubSignIn = () => {
-        // signIn("github", { callbackUrl: "/dashboard" });
-        console.log("GitHub Sign In Clicked");
-        alert("GitHub Sign In is currently disabled (next-auth missing). Redirecting to dashboard for demo.");
-        router.push("/dashboard");
+        window.location.href = process.env.NEXT_PUBLIC_BACKEND_URL + "/api/auth/github";
     };
 
     return (

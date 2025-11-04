@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import AuthLayout from "../components/AuthLayout";
 import AuthInput from "../components/AuthInput";
 import SocialButton from "../components/SocialButton";
+import { useAuth } from "../../context/AuthContext";
+import { api } from "../../lib/axios";
 
 export default function Signup() {
     const [name, setName] = useState("");
@@ -14,18 +16,21 @@ export default function Signup() {
     const [password, setPassword] = useState("");
     const router = useRouter();
 
-    const handleSignup = (e) => {
+    const { loginUser } = useAuth();
+
+    const handleSignup = async (e) => {
         e.preventDefault();
-        console.log("Signup:", { name, email, password });
-        // Demo redirect
-        router.push("/dashboard");
+        try {
+            const res = await api.post("/auth/register", { name, email, password });
+            loginUser(res.data.token, res.data.user);
+            router.push("/dashboard");
+        } catch (err) {
+            alert(err.response?.data?.error || "Registration failed");
+        }
     };
 
     const handleGithubSignup = () => {
-        // For now, redirect to dashboard as a demo
-        // In production, this would integrate with GitHub OAuth
-        alert("GitHub Sign-Up would be integrated here. For demo purposes, redirecting to dashboard...");
-        router.push("/dashboard");
+        window.location.href = process.env.NEXT_PUBLIC_BACKEND_URL + "/api/auth/github";
     };
 
     return (
