@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id          String        @id @default(cuid())
+  id          Int           @id @default(autoincrement())
   email       String?       @unique
   password    String?
   githubId    String?       @unique
@@ -27,8 +27,8 @@ model User {
 }
 
 model Plan {
-  id        String   @id @default(cuid())
-  userId    String
+  id        Int      @id @default(autoincrement())
+  userId    Int
   jd        String
   skills    Json
   roadmap   Json
@@ -41,8 +41,8 @@ model Plan {
 }
 
 model MiniProject {
-  id        String   @id @default(cuid())
-  userId    String
+  id        Int      @id @default(autoincrement())
+  userId    Int
   title     String
   details   String
   difficulty String   // Easy | Medium | Hard
@@ -52,8 +52,8 @@ model MiniProject {
 }
 
 model Note {
-  id        String   @id @default(cuid())
-  userId    String
+  id        Int      @id @default(autoincrement())
+  userId    Int
   content   String
   createdAt DateTime @default(now())
 
@@ -61,12 +61,11 @@ model Note {
 }
 
 model Challenge {
-  id        String   @id @default(cuid())
-  userId    String
+  id        Int      @id @default(autoincrement())
+  userId    Int
   question  String
   solution  String?
 
   date      DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
 }
-

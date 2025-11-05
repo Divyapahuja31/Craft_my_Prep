@@ -19,4 +19,4 @@ export const save = async (req, res) => {
         console.error("Save Plan Error:", error);
         res.status(400).json({ error: error.message });
     }
-};
+}; 
