@@ -7,3 +7,10 @@ export const getUserPlans = async (userId) => {
     });
     return plans;
 };
+
+export const getPlanById = async (planId) => {
+    const plan = await prisma.plan.findUnique({
+        where: { id: planId }
+    });
+    return plan;
+};
