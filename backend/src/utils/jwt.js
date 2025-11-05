@@ -17,4 +17,4 @@ export function verifyJwt(token) {
   } catch (err) {
     return null;
   }
-}
+} 
