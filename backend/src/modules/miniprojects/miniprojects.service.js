@@ -38,7 +38,6 @@ Return raw JSON only.`;
 
     const projectData = await generateFromGroq(prompt);
 
-    // Combine extra fields into description for now since schema is limited
     const fullDescription = `${projectData.description}\n\nTech Stack: ${projectData.techStack.join(', ')}\nTime: ${projectData.timeToComplete}\nOutcome: ${projectData.expectedOutcome}`;
 
     const project = await prisma.miniProject.create({

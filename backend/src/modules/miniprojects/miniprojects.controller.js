@@ -52,7 +52,7 @@ export const markProjectComplete = async (req, res) => {
         });
     } catch (error) {
         console.error("Error marking project complete:", error);
-        
+
         if (error.message === "Project not found") {
             return res.status(404).json({ success: false, message: "Project not found" });
         }

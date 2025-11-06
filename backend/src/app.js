@@ -7,6 +7,7 @@ import authRoutes from "./modules/auth/auth.routes.js";
 import generateRoutes from "./modules/generate/generate.routes.js";
 import { userRouter, planRouter } from "./modules/myplans/myplans.routes.js";
 import miniprojectsRouter from "./modules/miniprojects/miniprojects.routes.js";
+import dailyChallengeRoutes from "./modules/daily-challenge/daily-challenge.routes.js";
 
 
 export const app = express();
@@ -20,6 +21,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/plans", generateRoutes);
 app.use("/api/plans", planRouter);
 app.use("/api/users", userRouter);
+app.use("/api/daily-challenge", dailyChallengeRoutes);
 app.use("/api/miniprojects", miniprojectsRouter);
 
 app.get("/", (req, res) => {
