@@ -23,8 +23,6 @@ export default function DashboardLayout({ children }) {
         );
     }
 
-    // if (!user) return null;
-
     return (
         <div className="flex min-h-screen" style={{ background: "linear-gradient(180deg, #a8d5e2 0%, #e8f4f8 50%, #fef5e7 100%)" }}>
             <Sidebar />

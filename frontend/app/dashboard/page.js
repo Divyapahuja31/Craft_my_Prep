@@ -2,27 +2,161 @@
 
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
+import { api } from "../../lib/axios";
+import DashboardHeader from "./_components/DashboardHeader";
+import DailyChallengeCard from "./_components/DailyChallengeCard";
+import MiniProjectsCard from "./_components/MiniProjectsCard";
+import RecentActivityCard from "./_components/RecentActivityCard";
+import QuoteCard from "./_components/QuoteCard";
+import StickyNotesSection from "./_components/StickyNotesSection";
+import LeaderboardCard from "./_components/LeaderboardCard";
+import RecommendedResourceCard from "./_components/RecommendedResourceCard";
+import DashboardActions from "./_components/DashboardActions";
 
 export default function Dashboard() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
+    const [dailyChallenge, setDailyChallenge] = useState(null);
+    const [recentPlans, setRecentPlans] = useState([]);
+    const [notes, setNotes] = useState([]);
+    const [quote, setQuote] = useState(null);
+    const [article, setArticle] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!user) return;
+            try {
+                const challengeRes = await api.get("/daily-challenge/today");
+                setDailyChallenge(challengeRes.data);
+
+                const plansRes = await api.get(`/users/${user.id}/plans`);
+                setRecentPlans(plansRes.data.plans.slice(0, 2));
+
+                const notesRes = await api.get("/notes");
+                setNotes(notesRes.data.notes);
+
+                const today = new Date().toDateString();
+                const cachedQuote = localStorage.getItem("daily_quote");
+                const cachedQuoteDate = localStorage.getItem("daily_quote_date");
+
+                if (cachedQuote && cachedQuoteDate === today) {
+                    setQuote(JSON.parse(cachedQuote));
+                } else {
+                    try {
+                        const quoteRes = await fetch('https://dummyjson.com/quotes/random');
+                        const quoteData = await quoteRes.json();
+                        setQuote(quoteData);
+                        localStorage.setItem("daily_quote", JSON.stringify(quoteData));
+                        localStorage.setItem("daily_quote_date", today);
+                    } catch (e) {
+                        console.error("Failed to fetch quote", e);
+                        setQuote({ quote: "The only way to do great work is to love what you do.", author: "Steve Jobs" });
+                    }
+                }
+
+                const cachedArticle = localStorage.getItem("daily_article");
+                const cachedArticleDate = localStorage.getItem("daily_article_date");
+
+                if (cachedArticle && cachedArticleDate === today) {
+                    setArticle(JSON.parse(cachedArticle));
+                } else {
+                    try {
+                        const articleRes = await fetch('https://dev.to/api/articles?tag=career&per_page=10');
+                        const articles = await articleRes.json();
+                        if (articles && articles.length > 0) {
+                            const randomArticle = articles[Math.floor(Math.random() * articles.length)];
+                            setArticle(randomArticle);
+                            localStorage.setItem("daily_article", JSON.stringify(randomArticle));
+                            localStorage.setItem("daily_article_date", today);
+                        }
+                    } catch (e) {
+                        console.error("Failed to fetch article", e);
+                    }
+                }
+
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [user]);
+
+    const handleAddNote = async (content) => {
+        if (!content.trim()) return;
+        try {
+            const res = await api.post("/notes", { content });
+            setNotes([res.data.note, ...notes]);
+        } catch (error) {
+            console.error("Failed to add note:", error);
+        }
+    };
+
+    const handleDeleteNote = async (id) => {
+        try {
+            await api.delete(`/notes/${id}`);
+            setNotes(notes.filter(n => n.id !== id));
+        } catch (error) {
+            console.error("Failed to delete note:", error);
+        }
+    };
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+    };
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white/70 backdrop-blur-lg rounded-3xl p-12 shadow-xl border border-white/80 text-center"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="w-full max-w-7xl mx-auto space-y-8"
         >
-            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">Hello, {user?.name || "User"}!</h1>
-            <p className="text-lg text-gray-600">Welcome to your dashboard</p>
-            <button onClick={logout} style={{
-                backgroundColor: "black",
-                padding: 10,
-                width: 90,
-                borderRadius: 10,
-                margin: 10,
-                cursor: "pointer"
-            }}>logout</button>
-            {user?.email && <p className="text-md text-gray-500 mt-2">{user.email}</p>}
+            {/* Header */}
+            <DashboardHeader user={user} itemVariants={itemVariants} />
+
+            <hr className="border-gray-200/50" />
+
+            {/* Main Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                {/* Left Column */}
+                <div className="space-y-8 flex flex-col h-full">
+                    <DailyChallengeCard dailyChallenge={dailyChallenge} itemVariants={itemVariants} />
+                    <MiniProjectsCard itemVariants={itemVariants} />
+                    <RecentActivityCard itemVariants={itemVariants} />
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-8 flex flex-col h-full">
+                    <QuoteCard quote={quote} itemVariants={itemVariants} />
+                    <StickyNotesSection
+                        notes={notes}
+                        onAdd={handleAddNote}
+                        onDelete={handleDeleteNote}
+                        itemVariants={itemVariants}
+                    />
+                    <LeaderboardCard itemVariants={itemVariants} />
+                    <RecommendedResourceCard article={article} itemVariants={itemVariants} />
+                </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <DashboardActions itemVariants={itemVariants} />
         </motion.div>
     );
 }

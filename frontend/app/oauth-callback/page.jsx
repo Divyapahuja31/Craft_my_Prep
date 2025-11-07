@@ -1,10 +1,10 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { api } from "../../lib/axios";
 
-export default function OAuthCallbackPage() {
+function OAuthCallbackContent() {
   const params = useSearchParams();
   const router = useRouter();
   const { loginUser } = useAuth();
@@ -27,4 +27,12 @@ export default function OAuthCallbackPage() {
   }, []);
 
   return <p>Finishing login…</p>;
+}
+
+export default function OAuthCallbackPage() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <OAuthCallbackContent />
+    </Suspense>
+  );
 }
