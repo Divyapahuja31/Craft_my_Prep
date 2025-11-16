@@ -15,15 +15,6 @@ export default function Sidebar() {
     const { user, loading, logout } = useAuth();
 
 
-
-    /*
-    useEffect(() => {
-          if (!loading && !user) {
-              router.push("/login");
-          }
-      }, [user, loading, router]);
-    */
-
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#e8f4f8]">
@@ -40,12 +31,12 @@ export default function Sidebar() {
     const navItems = [
         { icon: "🔍", label: "Dashboard", href: "/dashboard" },
         { icon: "🤖", label: "Generate Plan", href: "/dashboard/generate" },
+        { icon: "📊", label: "My plans ", href: "/dashboard/my-plans" },
+        { icon: "⚡", label: "Mini Projects", href: "/dashboard/projects" },
         { icon: "🚀", label: "Daily Challenge", href: "/dashboard/features" },
         { icon: "🧪", label: "Resources", href: "/dashboard/test-api" },
-        { icon: "📊", label: "My plans ", href: "/dashboard/progress" },
-        { icon: "🏆", label: "Leaderboard", href: "/dashboard/leaderboard" },
         { icon: "💡", label: "Company Insights", href: "/dashboard/insights" },
-        { icon: "⚡", label: "Mini Projects", href: "/dashboard/projects" },
+        { icon: "🏆", label: "Leaderboard", href: "/dashboard/leaderboard" },
         { icon: "ℹ️", label: "Profile", href: "/dashboard/profile" },
     ];
 

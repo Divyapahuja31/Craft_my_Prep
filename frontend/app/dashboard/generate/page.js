@@ -1,9 +1,8 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-
-
-
+import { useRouter } from "next/navigation";
+import { Save } from "lucide-react";
 import { api } from "../../../lib/axios";
 
 const ExpandableItem = ({ title, icon, children, className }) => {
@@ -44,6 +43,7 @@ const ExpandableItem = ({ title, icon, children, className }) => {
 };
 
 export default function GeneratePlan() {
+    const router = useRouter();
     const [formData, setFormData] = useState({
         skills: "",
         goal: "",
@@ -54,6 +54,7 @@ export default function GeneratePlan() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedPlan, setGeneratedPlan] = useState(null);
     const [loadingStep, setLoadingStep] = useState(0);
+    const [isSaving, setIsSaving] = useState(false);
 
     const [error, setError] = useState(null);
 
@@ -112,10 +113,13 @@ export default function GeneratePlan() {
                     link: r.link,
                     icon: "📚"
                 })),
-                timeline: (data.timeline || []).map(t => ({
-                    title: `Day ${t.day}: ${t.topic}`,
+                timeline: (data.timeline || []).map((t, index) => ({
+                    day: t.day || (index + 1),
+                    topic: t.topic,
+                    title: `Day ${t.day || (index + 1)}: ${t.topic}`,
                     activities: t.activities,
-                    icon: "📅"
+                    icon: "📅",
+                    completed: false
                 }))
             };
 
@@ -131,6 +135,29 @@ export default function GeneratePlan() {
             clearInterval(interval);
             setIsGenerating(false);
             setError(error.response?.data?.error || "Failed to generate plan. Please try again.");
+        }
+    };
+
+    const handleSavePlan = async () => {
+        if (!generatedPlan) return;
+        setIsSaving(true);
+        try {
+            const payload = {
+                jobDescription: formData.jobDescription,
+                skills: generatedPlan.skills,
+                miniProjects: generatedPlan.projects,
+                practiceQuestions: generatedPlan.questions,
+                resources: generatedPlan.resources,
+                timeline: generatedPlan.timeline
+            };
+
+            await api.post('/plans', payload);
+            router.push('/dashboard/my-plans');
+        } catch (error) {
+            console.error("Failed to save plan:", error);
+            setError("Failed to save plan. Please try again.");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -301,152 +328,167 @@ export default function GeneratePlan() {
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+                        className="space-y-8"
                     >
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/80"
-                        >
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Skill Tags</h3>
-                            <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                                {generatedPlan.skills.map((skill, index) => (
-                                    <motion.span
-                                        key={skill}
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: 0.2 + index * 0.1 }}
-                                        className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-200 to-pink-200 text-gray-800 font-medium text-sm"
-                                    >
-                                        {skill}
-                                    </motion.span>
-                                ))}
-                            </div>
-                        </motion.div>
+                        <div className="flex justify-end gap-4">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={handleSavePlan}
+                                disabled={isSaving}
+                                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-lg transition-all disabled:opacity-50"
+                            >
+                                <Save size={20} />
+                                {isSaving ? "Saving..." : "Save & Start Plan"}
+                            </motion.button>
+                        </div>
 
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/80"
-                        >
-                            <h3 className="text-xl font-bold text-gray-900 mb-4">Mini Projects</h3>
-                            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                                {generatedPlan.projects.map((project, index) => (
-                                    <motion.div
-                                        key={project.title}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.2 + index * 0.1 }}
-                                    >
-                                        <ExpandableItem
-                                            title={project.title}
-                                            icon={project.icon}
-                                            className="bg-pink-100/50 hover:bg-pink-100"
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/80"
+                            >
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Skill Tags</h3>
+                                <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                    {generatedPlan.skills.map((skill, index) => (
+                                        <motion.span
+                                            key={skill}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: 0.2 + index * 0.1 }}
+                                            className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-200 to-pink-200 text-gray-800 font-medium text-sm"
                                         >
-                                            <p>{project.description || "No description available."}</p>
-                                        </ExpandableItem>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </motion.div>
+                                            {skill}
+                                        </motion.span>
+                                    ))}
+                                </div>
+                            </motion.div>
 
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                            className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/80"
-                        >
-                            <h3 className="text-xl font-bold text-gray-900 mb-4">Practice Questions</h3>
-                            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                                {generatedPlan.questions.map((question, index) => (
-                                    <motion.div
-                                        key={question.title}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.4 + index * 0.1 }}
-                                        className="flex items-center gap-3 p-3 rounded-xl bg-cyan-100/50 hover:bg-cyan-100 transition-all cursor-pointer"
-                                    >
-                                        <span className="text-2xl">{question.icon}</span>
-                                        <span className="text-sm font-medium text-gray-800">{question.title}</span>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </motion.div>
-
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/80"
-                        >
-                            <h3 className="text-xl font-bold text-gray-900 mb-4">Resources / Links</h3>
-                            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                                {generatedPlan.resources.map((resource, index) => (
-                                    <motion.div
-                                        key={resource.title}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.4 + index * 0.1 }}
-                                    >
-                                        <ExpandableItem
-                                            title={resource.title}
-                                            icon={resource.icon}
-                                            className="bg-green-100/50 hover:bg-green-100"
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/80"
+                            >
+                                <h3 className="text-xl font-bold text-gray-900 mb-4">Mini Projects</h3>
+                                <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                    {generatedPlan.projects.map((project, index) => (
+                                        <motion.div
+                                            key={project.title}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.2 + index * 0.1 }}
                                         >
-                                            {resource.link ? (
-                                                <a
-                                                    href={resource.link}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-600 hover:underline break-all"
-                                                >
-                                                    {resource.link}
-                                                </a>
-                                            ) : (
-                                                <span className="text-gray-500">No link available</span>
-                                            )}
-                                        </ExpandableItem>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </motion.div>
+                                            <ExpandableItem
+                                                title={project.title}
+                                                icon={project.icon}
+                                                className="bg-pink-100/50 hover:bg-pink-100"
+                                            >
+                                                <p>{project.description || "No description available."}</p>
+                                            </ExpandableItem>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </motion.div>
 
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                            className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/80 md:col-span-2"
-                        >
-                            <h3 className="text-xl font-bold text-gray-900 mb-4">Timeline / Schedule</h3>
-                            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                                {generatedPlan.timeline.map((item, index) => (
-                                    <motion.div
-                                        key={item.title}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.5 + index * 0.1 }}
-                                    >
-                                        <ExpandableItem
-                                            title={item.title}
-                                            icon={item.icon}
-                                            className="bg-orange-100/50 hover:bg-orange-100"
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                                className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/80"
+                            >
+                                <h3 className="text-xl font-bold text-gray-900 mb-4">Practice Questions</h3>
+                                <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                    {generatedPlan.questions.map((question, index) => (
+                                        <motion.div
+                                            key={question.title}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.4 + index * 0.1 }}
+                                            className="flex items-center gap-3 p-3 rounded-xl bg-cyan-100/50 hover:bg-cyan-100 transition-all cursor-pointer"
                                         >
-                                            {item.activities && item.activities.length > 0 ? (
-                                                <ul className="list-disc pl-4 space-y-1">
-                                                    {item.activities.map((activity, i) => (
-                                                        <li key={i}>{activity}</li>
-                                                    ))}
-                                                </ul>
-                                            ) : (
-                                                <p>No activities listed.</p>
-                                            )}
-                                        </ExpandableItem>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </motion.div>
+                                            <span className="text-2xl">{question.icon}</span>
+                                            <span className="text-sm font-medium text-gray-800">{question.title}</span>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                                className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/80"
+                            >
+                                <h3 className="text-xl font-bold text-gray-900 mb-4">Resources / Links</h3>
+                                <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                    {generatedPlan.resources.map((resource, index) => (
+                                        <motion.div
+                                            key={resource.title}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.4 + index * 0.1 }}
+                                        >
+                                            <ExpandableItem
+                                                title={resource.title}
+                                                icon={resource.icon}
+                                                className="bg-green-100/50 hover:bg-green-100"
+                                            >
+                                                {resource.link ? (
+                                                    <a
+                                                        href={resource.link}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-blue-600 hover:underline break-all"
+                                                    >
+                                                        {resource.link}
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-gray-500">No link available</span>
+                                                )}
+                                            </ExpandableItem>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5 }}
+                                className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/80 md:col-span-2"
+                            >
+                                <h3 className="text-xl font-bold text-gray-900 mb-4">Timeline / Schedule</h3>
+                                <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                    {generatedPlan.timeline.map((item, index) => (
+                                        <motion.div
+                                            key={item.title}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.5 + index * 0.1 }}
+                                        >
+                                            <ExpandableItem
+                                                title={item.title}
+                                                icon={item.icon}
+                                                className="bg-orange-100/50 hover:bg-orange-100"
+                                            >
+                                                {item.activities && item.activities.length > 0 ? (
+                                                    <ul className="list-disc pl-4 space-y-1">
+                                                        {item.activities.map((activity, i) => (
+                                                            <li key={i}>{activity}</li>
+                                                        ))}
+                                                    </ul>
+                                                ) : (
+                                                    <p>No activities listed.</p>
+                                                )}
+                                            </ExpandableItem>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
