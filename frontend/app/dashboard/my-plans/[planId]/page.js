@@ -4,7 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "../../../../lib/axios";
-import { ArrowLeft, CheckCircle, Circle, Save } from "lucide-react";
+import { ArrowLeft, CheckCircle, Circle, Save, Trophy } from "lucide-react";
+import { useAuth } from "../../../../context/AuthContext";
+import XPModal from "../../../components/XPModal";
 
 const ExpandableItem = ({ title, icon, children, className }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -46,9 +48,11 @@ const ExpandableItem = ({ title, icon, children, className }) => {
 export default function PlanDetails() {
     const { planId } = useParams();
     const router = useRouter();
+    const { user, updateUser } = useAuth();
     const [plan, setPlan] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showXPModal, setShowXPModal] = useState(false);
 
     useEffect(() => {
         const fetchPlan = async () => {
@@ -88,6 +92,24 @@ export default function PlanDetails() {
                 step.day === stepDay ? { ...step, completed: false } : step
             );
             setPlan({ ...plan, roadmap: revertedRoadmap });
+        }
+    };
+
+    const handleMarkPlanComplete = async () => {
+        if (!confirm("Are you sure you want to mark the entire plan as complete?")) return;
+
+        try {
+            const res = await api.patch(`/plans/${planId}/complete`);
+            if (res.data.plan) {
+                // Update local state if needed, though XP modal is the main feedback
+                if (user) {
+                    updateUser({ xp: user.xp + 70 });
+                }
+                setShowXPModal(true);
+            }
+        } catch (err) {
+            console.error("Error completing plan:", err);
+            alert(err.response?.data?.error || "Failed to complete plan");
         }
     };
 
@@ -136,13 +158,28 @@ export default function PlanDetails() {
                         <h1 className="text-3xl font-bold text-gray-900">{plan.jd}</h1>
                         <p className="text-gray-500 mt-2">Created on {new Date(plan.createdAt).toLocaleDateString()}</p>
                     </div>
-                    <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
-                        <div className="text-right">
-                            <p className="text-sm text-gray-500">Progress</p>
-                            <p className="text-xl font-bold text-emerald-600">{calculateProgress()}%</p>
-                        </div>
-                        <div className="w-12 h-12 rounded-full border-4 border-emerald-100 flex items-center justify-center">
-                            <div className="w-full h-full rounded-full border-4 border-emerald-500 border-t-transparent animate-spin-slow" style={{ transform: `rotate(${calculateProgress() * 3.6}deg)` }}></div>
+                    <div className="flex items-center gap-4">
+                        {calculateProgress() === 100 && (
+                            <motion.button
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={handleMarkPlanComplete}
+                                className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 flex items-center gap-2"
+                            >
+                                <Trophy size={20} />
+                                Mark Plan Complete
+                            </motion.button>
+                        )}
+                        <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
+                            <div className="text-right">
+                                <p className="text-sm text-gray-500">Progress</p>
+                                <p className="text-xl font-bold text-emerald-600">{calculateProgress()}%</p>
+                            </div>
+                            <div className="w-12 h-12 rounded-full border-4 border-emerald-100 flex items-center justify-center">
+                                <div className="w-full h-full rounded-full border-4 border-emerald-500 border-t-transparent animate-spin-slow" style={{ transform: `rotate(${calculateProgress() * 3.6}deg)` }}></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -320,6 +357,12 @@ export default function PlanDetails() {
                     </div>
                 </motion.div>
             </div>
+            
+            <XPModal 
+                isOpen={showXPModal} 
+                onClose={() => setShowXPModal(false)} 
+                xpAmount={70} 
+            />
         </div>
     );
 }

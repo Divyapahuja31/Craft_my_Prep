@@ -127,6 +127,10 @@ export default function Sidebar() {
                             <div className="flex-1 min-w-0">
                                 <p className="font-medium text-gray-800 text-xs sm:text-sm truncate">{user.name}</p>
                                 <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                                <div className="flex items-center gap-1 mt-1 text-emerald-600 font-medium text-xs">
+                                    <span>🏆</span>
+                                    <span>{user.xp || 0} XP</span>
+                                </div>
                             </div>
                         </div>
                         <motion.button
