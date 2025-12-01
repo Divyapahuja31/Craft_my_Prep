@@ -35,7 +35,7 @@ export default function Sidebar() {
         { icon: "⚡", label: "Mini Projects", href: "/dashboard/projects" },
         { icon: "🚀", label: "Daily Challenge", href: "/dashboard/features" },
         { icon: "🧪", label: "Resources", href: "/dashboard/test-api" },
-        { icon: "💡", label: "Company Insights", href: "/dashboard/insights" },
+        { icon: "💡", label: "Company Questions", href: "/dashboard/company-questions" },
         { icon: "🏆", label: "Leaderboard", href: "/dashboard/leaderboard" },
         { icon: "ℹ️", label: "Profile", href: "/dashboard/profile" },
     ];
