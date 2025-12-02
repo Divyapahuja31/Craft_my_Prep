@@ -43,10 +43,14 @@ export default function Navbar() {
                             {/* Logo */}
                             <Link href="/" className="flex items-center gap-2 group">
                                 <motion.div
-                                    className="w-7 h-7 rounded-lg flex items-center justify-center shadow-sm relative overflow-hidden bg-gradient-to-br from-[#a8d5ba] to-[#7ba8d4]"
+                                    className="w-12 h-12 flex items-center justify-center"
                                     whileHover={{ rotate: [0, -10, 10, -10, 0] }}
                                 >
-                                    <span className="text-sm relative z-10">✨</span>
+                                    <img 
+                                        src="/profile-pic.png" 
+                                        alt="Logo" 
+                                        className="w-full h-full object-contain"
+                                    />
                                 </motion.div>
                                 <h1 className="text-lg sm:text-xl font-bold text-gray-800 tracking-tight group-hover:text-gray-900 transition-colors">
                                     Craft My Prep
