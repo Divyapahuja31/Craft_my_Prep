@@ -14,9 +14,9 @@ export default function DashboardActions({ itemVariants }) {
                     Review Resources
                 </button>
             </Link>
-            <Link href="/dashboard/insights">
+            <Link href="/dashboard/company-questions">
                 <button className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-full font-medium shadow-sm transition-all active:scale-95">
-                    Company Insights
+                    Company Questions
                 </button>
             </Link>
         </motion.div>

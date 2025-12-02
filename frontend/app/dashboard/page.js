@@ -6,8 +6,9 @@ import { useEffect, useState } from "react";
 import { api } from "../../lib/axios";
 import DashboardHeader from "./_components/DashboardHeader";
 import DailyChallengeCard from "./_components/DailyChallengeCard";
-import MiniProjectsCard from "./_components/MiniProjectsCard";
-import RecentActivityCard from "./_components/RecentActivityCard";
+import PlansCard from "./_components/PlansCard";
+import MiniProjectsCard from "./_components/MiniProjectsCard"; // Re-imported
+// import RecentActivityCard from "./_components/RecentActivityCard"; // Removed
 import QuoteCard from "./_components/QuoteCard";
 import StickyNotesSection from "./_components/StickyNotesSection";
 import LeaderboardCard from "./_components/LeaderboardCard";
@@ -18,6 +19,8 @@ export default function Dashboard() {
     const { user } = useAuth();
     const [dailyChallenge, setDailyChallenge] = useState(null);
     const [recentPlans, setRecentPlans] = useState([]);
+    const [miniProjects, setMiniProjects] = useState([]);
+    const [leaderboardData, setLeaderboardData] = useState(null); // Added state for leaderboard
     const [notes, setNotes] = useState([]);
     const [quote, setQuote] = useState(null);
     const [article, setArticle] = useState(null);
@@ -32,6 +35,15 @@ export default function Dashboard() {
 
                 const plansRes = await api.get(`/users/${user.id}/plans`);
                 setRecentPlans(plansRes.data.plans.slice(0, 2));
+
+                const projectsRes = await api.get("/miniprojects");
+                setMiniProjects(projectsRes.data.projects || []);
+
+                // Fetch leaderboard data
+                const leaderboardRes = await api.get("/leaderboard");
+                if (leaderboardRes.data.success) {
+                    setLeaderboardData(leaderboardRes.data.data);
+                }
 
                 const notesRes = await api.get("/notes");
                 setNotes(notesRes.data.notes);
@@ -137,8 +149,9 @@ export default function Dashboard() {
                 {/* Left Column */}
                 <div className="space-y-8 flex flex-col h-full">
                     <DailyChallengeCard dailyChallenge={dailyChallenge} itemVariants={itemVariants} />
-                    <MiniProjectsCard itemVariants={itemVariants} />
-                    <RecentActivityCard itemVariants={itemVariants} />
+                    <PlansCard plans={recentPlans} itemVariants={itemVariants} />
+                    {/* Replaced RecentActivityCard with MiniProjectsCard */}
+                    <MiniProjectsCard projects={miniProjects} itemVariants={itemVariants} />
                 </div>
 
                 {/* Right Column */}
@@ -150,7 +163,7 @@ export default function Dashboard() {
                         onDelete={handleDeleteNote}
                         itemVariants={itemVariants}
                     />
-                    <LeaderboardCard itemVariants={itemVariants} />
+                    <LeaderboardCard data={leaderboardData} itemVariants={itemVariants} />
                     <RecommendedResourceCard article={article} itemVariants={itemVariants} />
                 </div>
             </div>
