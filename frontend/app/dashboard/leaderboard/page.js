@@ -104,11 +104,11 @@ export default function LeaderboardPage() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
-                                                    {entry.avatar ? (
-                                                        <img src={entry.avatar} alt={entry.name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <User className="text-gray-400" size={20} />
-                                                    )}
+                                                    <img
+                                                        src={entry.avatar || `https://robohash.org/${entry.name || 'user'}.png`}
+                                                        alt={entry.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
                                                 </div>
                                                 <span className={`font-medium ${isCurrentUser ? 'text-emerald-700' : 'text-gray-900'}`}>
                                                     {entry.name || "Anonymous User"}

@@ -3,8 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Navbar() {
+    const { user } = useAuth();
     const [showMegaMenu, setShowMegaMenu] = useState(false);
     const [showResourcesMenu, setShowResourcesMenu] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -75,25 +77,44 @@ export default function Navbar() {
 
                             {/* Action Buttons */}
                             <div className="hidden md:flex items-center gap-2">
-                                <Link href="/login">
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="px-4 py-1.5 rounded-full text-xs font-medium text-gray-800 bg-white/50 border border-white/80 hover:bg-white/80 transition-colors shadow-sm"
-                                    >
-                                        Login
-                                    </motion.button>
-                                </Link>
+                                {user ? (
+                                    <div className="flex items-center gap-3">
+                                        <Link href="/dashboard" className="px-4 py-1.5 rounded-full text-xs font-medium text-gray-700 bg-white/50 border border-white/80 hover:bg-white/80 transition-colors shadow-sm">
+                                            Dashboard
+                                        </Link>
+                                        <Link href="/dashboard/profile">
+                                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden shadow-md border-2 border-white/80 hover:scale-105 transition-transform">
+                                                <img
+                                                    src={user.avatar || `https://robohash.org/${user.name || 'user'}.png`}
+                                                    alt={user.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <Link href="/login">
+                                            <motion.button
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                className="px-4 py-1.5 rounded-full text-xs font-medium text-gray-800 bg-white/50 border border-white/80 hover:bg-white/80 transition-colors shadow-sm"
+                                            >
+                                                Login
+                                            </motion.button>
+                                        </Link>
 
-                                <Link href="/dashboard/generate">
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="px-4 py-1.5 rounded-full text-xs font-semibold text-white bg-gray-900 hover:bg-gray-800 shadow-md transition-colors"
-                                    >
-                                        Try Free
-                                    </motion.button>
-                                </Link>
+                                        <Link href="/dashboard/generate">
+                                            <motion.button
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                className="px-4 py-1.5 rounded-full text-xs font-semibold text-white bg-gray-900 hover:bg-gray-800 shadow-md transition-colors"
+                                            >
+                                                Try Free
+                                            </motion.button>
+                                        </Link>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -139,12 +160,27 @@ export default function Navbar() {
                                         <MobileNavLink href="/blog">Blog</MobileNavLink>
                                         <MobileNavLink href="/about">About</MobileNavLink>
                                         <div className="border-t border-gray-200 my-2 pt-2 space-y-2">
-                                            <Link href="/login" className="block w-full px-4 py-3 text-center text-sm font-medium text-gray-800 bg-gray-100 rounded-lg">
-                                                Login
-                                            </Link>
-                                            <Link href="/generate" className="block w-full px-4 py-3 text-center text-sm font-semibold text-white bg-gray-900 rounded-lg">
-                                                Try Free
-                                            </Link>
+                                            {user ? (
+                                                <Link href="/dashboard" className="flex items-center gap-3 w-full px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                                                        {user.avatar ? (
+                                                            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            user.name?.charAt(0).toUpperCase() || "U"
+                                                        )}
+                                                    </div>
+                                                    <span className="text-sm font-medium text-gray-800">Go to Dashboard</span>
+                                                </Link>
+                                            ) : (
+                                                <>
+                                                    <Link href="/login" className="block w-full px-4 py-3 text-center text-sm font-medium text-gray-800 bg-gray-100 rounded-lg">
+                                                        Login
+                                                    </Link>
+                                                    <Link href="/generate" className="block w-full px-4 py-3 text-center text-sm font-semibold text-white bg-gray-900 rounded-lg">
+                                                        Try Free
+                                                    </Link>
+                                                </>
+                                            )}
                                         </div>
                                     </nav>
                                 </div>
@@ -157,7 +193,7 @@ export default function Navbar() {
     );
 }
 
-// Subcomponents
+
 function NavButton({ children, onMouseEnter }) {
     return (
         <button
@@ -192,7 +228,7 @@ function MegaMenu({ children, onClose }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="absolute top-full left-0 right-0 mt-2"
-            onMouseEnter={() => { }} // Keep open on hover
+            onMouseEnter={() => { }}
             onMouseLeave={onClose}
         >
             <div className="rounded-2xl border border-white/50 p-6 bg-white/95 backdrop-blur-xl shadow-2xl">
@@ -210,7 +246,7 @@ function MegaMenuItem({ icon, title, desc, href, color }) {
             <motion.div
                 whileHover={{ scale: 1.02, y: -2 }}
                 className="p-4 rounded-xl transition-all group h-full"
-                style={{ backgroundColor: `${color}10` }} // 10% opacity hex
+                style={{ backgroundColor: `${color}10` }}
             >
                 <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center text-xl shadow-sm" style={{ backgroundColor: color }}>
