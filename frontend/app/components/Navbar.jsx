@@ -123,23 +123,23 @@ export default function Navbar() {
                     <AnimatePresence>
                         {showMegaMenu && (
                             <MegaMenu onClose={() => setShowMegaMenu(false)}>
-                                <MegaMenuItem icon="🎯" title="AI Interview Prep" desc="Personalized practice sessions" href="/generate" color="#a8d5ba" />
-                                <MegaMenuItem icon="📊" title="Skill Assessment" desc="Track your progress" href="/leaderboard" color="#7ba8d4" />
-                                <MegaMenuItem icon="🎤" title="Mock Interviews" desc="Real-time feedback" href="/generate" color="#d4c5a9" />
-                                <MegaMenuItem icon="📄" title="Resume Builder" desc="ATS-optimized templates" href="/generate" color="#ffd9a3" />
-                                <MegaMenuItem icon="🗺️" title="Career Roadmap" desc="Personalized learning path" href="/generate" color="#c7f0d8" />
-                                <MegaMenuItem icon="👥" title="Community" desc="Connect with peers" href="/leaderboard" color="#e9d5ff" />
+                                <MegaMenuItem icon="🤖" title="Generate Plan" desc="Create your custom prep plan" href="/dashboard/generate" color="#a8d5ba" />
+                                <MegaMenuItem icon="📊" title="My Plans" desc="View your saved roadmaps" href="/dashboard/my-plans" color="#7ba8d4" />
+                                <MegaMenuItem icon="⚡" title="Mini Projects" desc="Build real-world projects" href="/dashboard/projects" color="#ffd9a3" />
+                                <MegaMenuItem icon="�" title="Daily Challenge" desc="Solve a new problem every day" href="/dashboard" color="#ff9999" />
+                                <MegaMenuItem icon="�" title="Company Questions" desc="Practice company-specific Qs" href="/dashboard/company-questions" color="#c9b5ff" />
+                                <MegaMenuItem icon="🏆" title="Leaderboard" desc="Compete with others" href="/dashboard/leaderboard" color="#ffd700" />
                             </MegaMenu>
                         )}
 
                         {showResourcesMenu && (
                             <MegaMenu onClose={() => setShowResourcesMenu(false)}>
-                                <MegaMenuItem icon="📚" title="Documentation" desc="Complete guides and tutorials" href="/about" color="#ffd9a3" />
-                                <MegaMenuItem icon="🎥" title="Video Tutorials" desc="Step-by-step video guides" href="/generate" color="#ff9999" />
-                                <MegaMenuItem icon="📝" title="Blog & Articles" desc="Latest tips and insights" href="/about" color="#b8e0d2" />
-                                <MegaMenuItem icon="💡" title="Interview Tips" desc="Expert advice and strategies" href="/generate" color="#c9b5ff" />
-                                <MegaMenuItem icon="💻" title="Coding Challenges" desc="Practice problems" href="/projects" color="#ffb6c1" />
-                                <MegaMenuItem icon="💬" title="Community Forum" desc="Connect with learners" href="/leaderboard" color="#ffd700" />
+                                <MegaMenuItem icon="📚" title="Documentation" desc="Complete guides and tutorials" href="/dashboard/resources" color="#ffd9a3" />
+                                <MegaMenuItem icon="🎥" title="Video Tutorials" desc="Step-by-step video guides" href="/dashboard/resources" color="#ff9999" />
+                                <MegaMenuItem icon="📝" title="Blog & Articles" desc="Latest tips and insights" href="/blog" color="#b8e0d2" />
+                                <MegaMenuItem icon="💡" title="Interview Tips" desc="Expert advice and strategies" href="/dashboard/company-questions" color="#c9b5ff" />
+                                <MegaMenuItem icon="💻" title="Coding Challenges" desc="Practice problems" href="/dashboard/projects" color="#ffb6c1" />
+                                <MegaMenuItem icon="💬" title="Community Forum" desc="Connect with learners" href="/dashboard/leaderboard" color="#ffd700" />
                             </MegaMenu>
                         )}
                     </AnimatePresence>
@@ -155,8 +155,8 @@ export default function Navbar() {
                             >
                                 <div className="rounded-2xl border border-white/50 p-4 bg-white/95 backdrop-blur-xl shadow-xl">
                                     <nav className="space-y-2">
-                                        <MobileNavLink href="/generate">Features</MobileNavLink>
-                                        <MobileNavLink href="/about">Resources</MobileNavLink>
+                                        <MobileNavLink href="/dashboard/generate">Features</MobileNavLink>
+                                        <MobileNavLink href="/dashboard/resources">Resources</MobileNavLink>
                                         <MobileNavLink href="/blog">Blog</MobileNavLink>
                                         <MobileNavLink href="/about">About</MobileNavLink>
                                         <div className="border-t border-gray-200 my-2 pt-2 space-y-2">
