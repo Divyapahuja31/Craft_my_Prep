@@ -23,13 +23,12 @@ if (GITHUB_ID && GITHUB_SECRET) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          // find user by githubId
           let user = await prisma.user.findUnique({
             where: { githubId: profile.id }
           });
 
           if (!user) {
-            // try to find by email (if public email available)
+          
             const email =
               profile.emails && profile.emails.length ? profile.emails[0].value : null;
 
@@ -42,17 +41,13 @@ if (GITHUB_ID && GITHUB_SECRET) {
               }
             });
           } else {
-            // optionally update profile fields
             await prisma.user.update({
               where: { id: user.id },
               data: { name: profile.displayName || user.name, avatar: profile.photos?.[0]?.value || user.avatar }
             });
           }
 
-          // Create JWT (no sessions)
           const token = signJwt({ id: user.id });
-
-          // done returns user to passport; we will redirect later with token
           return done(null, { user, token });
         } catch (err) {
           return done(err);
